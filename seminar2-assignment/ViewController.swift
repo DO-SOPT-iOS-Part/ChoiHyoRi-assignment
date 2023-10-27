@@ -13,19 +13,23 @@ class ViewController: UIViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
-    @objc func imageButtonTapped() {
-        let newViewController = WeatherViewController()
-        self.navigationController?.pushViewController(newViewController, animated: true)
+  
+    
+    @objc func tapCodePushButton() {
+        let viewController = WeatherViewController()
+        self.navigationController?.pushViewController(viewController, animated: true)
     }
     
     let buttonWithImage: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(named: "backgroundS"), for: .normal)
-        button.addTarget(self, action: #selector(imageButtonTapped), for: .touchUpInside) // 변경된 부분
+       
+        
+        button.addTarget(self, action: #selector(tapCodePushButton), for: .touchUpInside)
+
         return button
     }()
-    
   
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,6 +41,7 @@ class ViewController: UIViewController {
         // Add the scroll view
         self.view.addSubview(scrollView)
         scrollView.addSubview(buttonWithImage)
+        
         
         navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true

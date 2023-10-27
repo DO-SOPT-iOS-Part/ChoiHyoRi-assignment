@@ -2,6 +2,7 @@ import UIKit
 
 class WeatherViewController: UIViewController {
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         // 새로운 뷰 컨트롤러의 내용을 구성할 수 있습니다.
         self.view.backgroundColor = .white
