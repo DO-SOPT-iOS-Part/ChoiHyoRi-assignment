@@ -15,6 +15,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = navigationController // UINavigationController를 루트 뷰 컨트롤러로 설정
         window?.makeKeyAndVisible()
         
+
+        
+        
+        
         return true
     }
 }
