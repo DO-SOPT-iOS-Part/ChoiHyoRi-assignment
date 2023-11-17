@@ -15,7 +15,7 @@ class WeatherViewController: UIViewController {
         super.viewDidLoad()
         self.view.layoutIfNeeded()
         setBackGround()
-     setWeatherScroll()
+        setWeatherScroll()
         
     }
     @objc func pop() {
@@ -30,6 +30,10 @@ class WeatherViewController: UIViewController {
     }()
     
     private func setBackGround(){
+        self.view.addSubview(collectionView)
+        collectionView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
         self.view.addSubview(backgroundImageView)
         NSLayoutConstraint.activate([backgroundImageView.topAnchor.constraint(equalTo: self.view.topAnchor),
@@ -51,7 +55,7 @@ class WeatherViewController: UIViewController {
                                      contentView.heightAnchor.constraint(equalToConstant: 1000)])
         contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
         setLayout()
-    
+        
     }
     
     private func setLayout() {
@@ -80,10 +84,10 @@ class WeatherViewController: UIViewController {
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor)
         ])
-//        smallView.addSubview(descriptionLabel)
-//        smallView.addSubview(line)
-//        smallView.addSubview(TimeStackView)
-//        
+        //        smallView.addSubview(descriptionLabel)
+        //        smallView.addSubview(line)
+        //        smallView.addSubview(TimeStackView)
+        //
         timeScroll.addSubview(TimeStackView)
         [descriptionLabel, line, timeScroll].forEach{
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -91,22 +95,22 @@ class WeatherViewController: UIViewController {
         }
         
         NSLayoutConstraint.activate([descriptionLabel.topAnchor.constraint(equalTo: smallView.topAnchor, constant: 1),
-                                           descriptionLabel.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 15),
-                                           descriptionLabel.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -15),
-                                           descriptionLabel.widthAnchor.constraint(equalToConstant: 305),
-                                           descriptionLabel.heightAnchor.constraint(equalToConstant: 45)])
-              
+                                     descriptionLabel.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 15),
+                                     descriptionLabel.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -15),
+                                     descriptionLabel.widthAnchor.constraint(equalToConstant: 305),
+                                     descriptionLabel.heightAnchor.constraint(equalToConstant: 45)])
+        
         NSLayoutConstraint.activate([    line.heightAnchor.constraint(equalToConstant: 0.1),
-line.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 66),
-                                           line.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 14),
-                                           line.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -14),
-                                           line.bottomAnchor.constraint(equalTo: smallView.bottomAnchor, constant: -20)])
-              
-              NSLayoutConstraint.activate([timeScroll.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10),
-                                           timeScroll.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 10),
-                                           timeScroll.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -10),
-                                           timeScroll.bottomAnchor.constraint(equalTo: smallView.bottomAnchor, constant: -10)])
-              
+                                         line.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 66),
+                                         line.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 14),
+                                         line.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -14),
+                                         line.bottomAnchor.constraint(equalTo: smallView.bottomAnchor, constant: -20)])
+        
+        NSLayoutConstraint.activate([timeScroll.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 10),
+                                     timeScroll.leadingAnchor.constraint(equalTo: smallView.leadingAnchor, constant: 10),
+                                     timeScroll.trailingAnchor.constraint(equalTo: smallView.trailingAnchor, constant: -10),
+                                     timeScroll.bottomAnchor.constraint(equalTo: smallView.bottomAnchor, constant: -10)])
+        
         
     }
     
@@ -121,7 +125,7 @@ line.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 66),
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.contentSize = CGSize(width: scrollView.frame.width, height: 100)// 적절한 높이 값)
-
+        
         return scrollView
     }()
     private var contentView: UIView = {
@@ -215,7 +219,14 @@ line.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 66),
         let imageView = UIImageView(image: UIImage(named: "one"))
         return imageView
     }()
+    private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout()).then {
+            $0.backgroundColor = .black
+        }
+ 
+    
 }
+
+
     extension WeatherViewController {
         private func setWeatherScroll() {
             let ItemArray = [weatherScroll(time: "Now", imageName: "thunder", temperature: "21°"),

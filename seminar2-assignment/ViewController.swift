@@ -7,195 +7,157 @@
 
 import UIKit
 
+import SnapKit
+import Then
+
 class ViewController: UIViewController {
-    let scrollView: UIScrollView = {
-        let scrollView = UIScrollView() 
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        return scrollView
-    }()
     
+    private lazy var rightBarButtonItem = UIBarButtonItem()
+    private let locationSearchController = UISearchController()
+    private let tableView = UITableView(frame: .zero, style: .plain)
+    var searchWeatherInfoListData = weatherInfoListData
     
-    @objc func tapCodePushButton() {
-        //        let vc = WeatherViewController()
-        //
-        //          self.navigationController?.pushViewController(vc, animated: true)
-        let svc = WeatherViewController()
-        svc.modalPresentationStyle = .fullScreen
-        self.present(svc, animated: true, completion: nil)
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.view.backgroundColor = .black
+        self.setNavigation()
+        self.setUI()
+        self.setSearchController()
+        Task {
+            await fetchWeatherInfo()
+        }
+        self.setTableViewConfig()
     }
     
-    private var buttonWithImage: UIButton = {
-        let buttonView = UIButton()
-        buttonView.translatesAutoresizingMaskIntoConstraints = false
-        buttonView.setImage(UIImage(named: "backgroundS"), for: .normal)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.navigationBar.isHidden = false
+        self.navigationItem.searchController?.searchBar.isHidden = false
+    }
+    
+}
 
-        
-        let myLocationLabel = UILabel()
-        myLocationLabel.text = "나의 위치"
-        myLocationLabel.font =  UIFont(name: "SFProDisplay-Bold", size: 34)
-        myLocationLabel.textColor = .white
-        
-        let locationLabel = UILabel()
-        locationLabel.text = "의정부시"
-        locationLabel.font = UIFont(name: "SFProDisplay-Bold", size: 17)
-        locationLabel.textColor = .white
-        
-        let weatherLabel = UILabel()
-        weatherLabel.text = "흐림"
-        weatherLabel.font = UIFont(name: "SFProDisplay-Bold", size: 16)
-        weatherLabel.textColor = .white
-        
-        let temperatureLabel = UILabel()
-        temperatureLabel.text = "21°"
-        temperatureLabel.font = UIFont(name: "SFProDisplay-Light", size: 52)
-        temperatureLabel.textColor = .white
-        
-        let maxmin = UILabel()
-        maxmin.text = "최고: 29° 최저: 15°"
-        maxmin.font = UIFont(name: "SFProDisplay-Bold", size: 15)
-        maxmin.textColor = .white
-        
-        
-        [myLocationLabel, locationLabel, weatherLabel, temperatureLabel, maxmin].forEach{
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            buttonView.addSubview($0)
-        }
-        NSLayoutConstraint.activate([myLocationLabel.topAnchor.constraint(equalTo: buttonView.topAnchor, constant: 15),
-                                     myLocationLabel.leadingAnchor.constraint(equalTo: buttonView.leadingAnchor, constant: 40)])
-        NSLayoutConstraint.activate([locationLabel.topAnchor.constraint(equalTo: buttonView.topAnchor, constant: 55),
-                                     locationLabel  .leadingAnchor.constraint(equalTo: buttonView.leadingAnchor, constant: 40)])
-        NSLayoutConstraint.activate([weatherLabel.topAnchor.constraint(equalTo: buttonView.topAnchor, constant: 87),
-                                     weatherLabel.leadingAnchor.constraint(equalTo: buttonView.leadingAnchor, constant: 40)])
-        NSLayoutConstraint.activate([temperatureLabel.topAnchor.constraint(equalTo: buttonView.topAnchor, constant: 4),
-                                     temperatureLabel.leadingAnchor.constraint(equalTo: buttonView.leadingAnchor, constant: 280)])
-        NSLayoutConstraint.activate([maxmin.topAnchor.constraint(equalTo: buttonView.topAnchor, constant: 87),
-                                     maxmin.leadingAnchor.constraint(equalTo: weatherLabel.leadingAnchor, constant: 200)])
+extension ViewController {
     
-    buttonView.addTarget(self, action: #selector(tapCodePushButton), for: .touchUpInside)
+    private func setUI() {
+        setStyle()
+        setLayout()
+    }
     
-        return buttonView
-}()
-        
-        override func viewDidLoad() {
-            super.viewDidLoad()
-            self.view.backgroundColor = .black
-            
-            
-            self.view.addSubview(navigationBar)
-            self.view.addSubview(scrollView)
-            scrollView.addSubview(buttonWithImage)
-            
-            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-            navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-            navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-            
-            let navItem = UINavigationItem()
-            
-            let rightButton = UIBarButtonItem(image: UIImage(named: "more"), style: .plain, target: self, action: nil)
-            rightButton.tintColor = .white
-            navItem.rightBarButtonItem = rightButton
-            
-            let titleLabel = UILabel()
-            titleLabel.text = "날씨"
-            titleLabel.textColor = .white
-            titleLabel.font = UIFont(name: "SFProDisplay-Bold", size: 40)
-            titleLabel.sizeToFit()
-            
-            
-            
-            
-            let leftPaddingView = UIView(frame: CGRect(x: 0, y: 0, width: 6, height: titleLabel.frame.size.height))
-            let titleContainerView = UIView()
-            titleContainerView.addSubview(leftPaddingView)
-            titleContainerView.addSubview(titleLabel)
-            titleContainerView.translatesAutoresizingMaskIntoConstraints = false
-            let searchController = UISearchController(searchResultsController: nil)
-            searchController.hidesNavigationBarDuringPresentation = false
-            searchController.obscuresBackgroundDuringPresentation = false
-            searchController.searchBar.tintColor = .white
-            searchController.searchBar.searchBarStyle = .minimal
-            searchController.searchBar.placeholder = "도시 또는 공항 검색"
-            self.navigationItem.searchController = searchController
-            self.definesPresentationContext = true
-           
-            navItem.titleView = titleContainerView
-            
-            // Add the search bar below the title
-            navItem.searchController = searchController
-            
-            navigationBar.setItems([navItem], animated: true)
-            
-            NSLayoutConstraint.activate([
-                scrollView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor), scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                
-                buttonWithImage.topAnchor.constraint(equalTo: scrollView.topAnchor),
-                buttonWithImage.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-                buttonWithImage.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-                buttonWithImage.heightAnchor.constraint(equalToConstant: 117)
-            ])
+    private func setStyle() {
+        rightBarButtonItem.do {
+            $0.isHidden = false
+            $0.image = UIImage(named: "ellipsis_image")
+            $0.tintColor = .white
         }
         
-        let navigationBar: UINavigationBar = {
-            let navigationBar = UINavigationBar()
-            navigationBar.translatesAutoresizingMaskIntoConstraints = false
-            return navigationBar
-        }()
-        private var leftStackView: UIStackView = {
-            let stackView = UIStackView()
-            stackView.axis = .vertical
-            stackView.distribution = .fillEqually
-            stackView.spacing  = 0
-            return stackView
-        }()
-        
-        
-        private var rightStackView: UIStackView = {
-            let stackView = UIStackView()
-            stackView.axis = .vertical
-            stackView.distribution = .fillEqually
-            stackView.spacing  = 0
-            return stackView
-        }()
-        private var scrollView1 : UIScrollView = {
-            let view = UIScrollView()
-            //           view.backgroundColor = .blue
-            return view
-        }()
-        private var contentView : UIView = {
-            let view = UIView()
-            //           view.backgroundColor = .green
-            return view
-        }()
-        
-        
-   
-        private func setLayout() {
-            self.view.addSubview(scrollView)
-            
-            scrollView.addSubview(contentView)
-            scrollView.translatesAutoresizingMaskIntoConstraints = false
-            contentView.translatesAutoresizingMaskIntoConstraints = false
-            
-            NSLayoutConstraint.activate([
-                scrollView.topAnchor.constraint(equalTo: self.view.topAnchor),
-                scrollView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
-                scrollView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-                scrollView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
-            ])
-            
-            NSLayoutConstraint.activate([
-                contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-                contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-                contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-                contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-                contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-                contentView.heightAnchor.constraint(greaterThanOrEqualTo: view.heightAnchor)
-            ])
-            
-      
+        locationSearchController.do {
+            $0.searchBar.searchTextField.attributedPlaceholder = NSAttributedString(string: "도시 또는 공항 검색", attributes: [NSAttributedString.Key.foregroundColor : #colorLiteral(red: 0.6178889275, green: 0.6178889275, blue: 0.6178889275, alpha: 1)])
+            $0.searchBar.searchTextField.backgroundColor = #colorLiteral(red: 0.1353607476, green: 0.1353607476, blue: 0.1353607476, alpha: 1)
+            $0.searchBar.searchTextField.textColor = .white
+            $0.searchBar.tintColor = .white
+            $0.searchBar.setValue("취소", forKey: "cancelButtonText")
+            $0.hidesNavigationBarDuringPresentation = true
         }
         
-};
+        tableView.do {
+            $0.backgroundColor = .black
+            $0.separatorStyle = .none
+        }
+    }
+    
+    private func setLayout() {
+        self.view.addSubview(tableView)
+        
+        tableView.snp.makeConstraints {
+            $0.top.bottom.equalTo(self.view.safeAreaLayoutGuide)
+            $0.leading.trailing.equalToSuperview().inset(16)
+        }
+    }
+    
+    private func setNavigation() {
+        self.navigationItem.rightBarButtonItem = rightBarButtonItem
+        self.navigationItem.title = "날씨"
+        self.navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        self.navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        self.navigationController?.navigationBar.barTintColor = .black
+        self.navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
+    private func setSearchController() {
+        self.navigationItem.searchController = locationSearchController
+        self.navigationItem.hidesSearchBarWhenScrolling = false
+        self.locationSearchController.searchBar.searchTextField.textColor = .white
+        self.locationSearchController.searchBar.searchTextField.leftView?.tintColor = #colorLiteral(red: 0.6178889275, green: 0.6178889275, blue: 0.6178889275, alpha: 1)
+        self.locationSearchController.searchResultsUpdater = self
+    }
+    
+    private func setTableViewConfig() {
+        self.tableView.register(WeatherInfoTableViewCell.self,
+                                forCellReuseIdentifier: WeatherInfoTableViewCell.identifier)
+        self.tableView.delegate = self
+        self.tableView.dataSource = self
+    }
+    
+    private func fetchWeatherInfo() async {
+        let locations = ["seoul", "daegu", "ulsan", "chuncheon", "jeju"]
+        
+        for location in locations {
+            do {
+                let currentWeather = try await CurrentWeatherService.shared.GetCurrentWeatherData(location: location)
+                let weatherInfo = WeatherInfoListData(location: currentWeather.name, timezone: currentWeather.timezone, weather: currentWeather.weather[0].main, temperature: currentWeather.main.temp, maxTemperature: currentWeather.main.tempMax, minTemperature: currentWeather.main.tempMin)
+                weatherInfoListData.append(weatherInfo)
+                searchWeatherInfoListData = weatherInfoListData
+            } catch {
+                print(error)
+            }
+        }
+        tableView.reloadData()
+    }
+    
+}
+
+extension ViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 135
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let weatherDetailedInfoPageVC = WeatherDetailedInfoPageVC()
+        weatherDetailedInfoPageVC.initialPage = weatherInfoListData.firstIndex(of: searchWeatherInfoListData[indexPath.row])!
+        self.navigationController?.pushViewController(weatherDetailedInfoPageVC, animated: true)
+    }
+    
+}
+
+
+extension ViewController: UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchWeatherInfoListData.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: WeatherInfoTableViewCell.identifier,
+                                                       for: indexPath) as? WeatherInfoTableViewCell else {return UITableViewCell()}
+        cell.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+        cell.selectionStyle = .none
+        cell.bindData(data: searchWeatherInfoListData[indexPath.row])
+        return cell
+    }
+    
+}
+
+extension ViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        guard let searchText = searchController.searchBar.text else { return }
+        if searchText.isEmpty {
+            searchWeatherInfoListData = weatherInfoListData
+        } else {
+            searchWeatherInfoListData = weatherInfoListData.filter { $0.location.lowercased().contains(searchText.lowercased()) }
+        }
+        tableView.reloadData()
+    }
+}
 
